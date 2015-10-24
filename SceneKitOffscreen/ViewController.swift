@@ -27,37 +27,81 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     let bytesPerPixel = Int(4)
     let bitsPerComponent = Int(8)
     let bitsPerPixel:Int = 32
-    var textureSizeX:Int = 50
-    var textureSizeY:Int = 50
+    
+    var sizeX:Int = 400
+    var sizeY:Int = 1200
+    
+    var textureSizeX:Int!
+    var textureSizeY:Int!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         scene1 = SCNScene()
         
-        let box = SCNBox(width: 1, height: 1, length: 1, chamferRadius: 0)
+        let box = SCNBox(width: 40, height: 400, length: 40, chamferRadius: 0)
         box.materials.first?.diffuse.contents = UIColor.redColor()
         let boxNode = SCNNode(geometry: box)
+        var boxTransform = SCNMatrix4Identity
+        boxTransform = SCNMatrix4Rotate(boxTransform, 20 * Float(M_PI) / 180, 0, 1, 0)
+        boxTransform = SCNMatrix4Rotate(boxTransform, 60 * Float(M_PI) / 180, 1, 0, 0)
+        boxTransform = SCNMatrix4Translate(boxTransform, Float(sizeX/2), 0, Float(sizeY/2))
+        boxNode.transform = boxTransform
+
+        let floor = SCNFloor()
+        floor.reflectivity = 0
+        floor.materials.first?.diffuse.contents = UIColor.blackColor()
+        let floorNode = SCNNode(geometry: floor)
+        scene1.rootNode.addChildNode(floorNode)
+        
+        
         scene1.rootNode.addChildNode(boxNode)
         
-        let sphere = SCNSphere(radius: 1)
-        sphere.materials.first?.diffuse.contents = UIColor.yellowColor()
+        let sphere = SCNSphere(radius: 30)
+        sphere.materials.first?.diffuse.contents = UIColor.redColor()
         let sphereNode = SCNNode(geometry: sphere)
-        sphereNode.position = SCNVector3Make(2, 0, 0)
+        sphereNode.position = SCNVector3Make(0, 0, 0)
         scene1.rootNode.addChildNode(sphereNode)
+        
+        let sphereMaxX = SCNSphere(radius: 30)
+        sphereMaxX.materials.first?.diffuse.contents = UIColor.greenColor()
+        let sphereMaxXNode = SCNNode(geometry: sphereMaxX)
+        sphereMaxXNode.position = SCNVector3Make(Float(sizeX), 0, 0)
+        scene1.rootNode.addChildNode(sphereMaxXNode)
+        
+        let sphereMaxXY = SCNSphere(radius: 30)
+        sphereMaxXY.materials.first?.diffuse.contents = UIColor.blueColor()
+        let sphereMaxXYNode = SCNNode(geometry: sphereMaxXY)
+        sphereMaxXYNode.position = SCNVector3Make(Float(sizeX), 0, Float(sizeY))
+        scene1.rootNode.addChildNode(sphereMaxXYNode)
+        
+        let orthoScale = min(Double(sizeX),Double(sizeY))/2
+        
+        let camera = SCNCamera()
+        camera.usesOrthographicProjection = true
+        camera.orthographicScale = orthoScale
+        camera.zFar = 1000
+        camera.zNear = 10
+        let cameraNode = SCNNode()
+        cameraNode.camera = camera
+        var cameraTransform = SCNMatrix4Identity
+        cameraTransform = SCNMatrix4Rotate(cameraTransform, -90 * Float(M_PI) / 180, 1, 0, 0)
+        cameraTransform = SCNMatrix4Translate(cameraTransform, Float(sizeX)/2, 300, Float(sizeY)/2)
+        cameraNode.transform = cameraTransform
+        
+        scene1.rootNode.addChildNode(cameraNode)
+        
         
         scnView1.scene = scene1
         
         
         scene2 = SCNScene()
         
-        plane = SCNPlane(width: 10, height: 10)
+        plane = SCNPlane(width: CGFloat(sizeX), height: CGFloat(sizeY))
         let planeNode = SCNNode(geometry: plane)
         scene2.rootNode.addChildNode(planeNode)
         
         scnView2.scene = scene2
-        
-        
         
         scnView1.autoenablesDefaultLighting = true
         scnView2.autoenablesDefaultLighting = true
@@ -88,7 +132,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         let renderPassDescriptor = MTLRenderPassDescriptor()
         renderPassDescriptor.colorAttachments[0].texture = offscreenTexture
         renderPassDescriptor.colorAttachments[0].loadAction = .Clear
-        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0, 1, 0, 1.0); //green
+        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0.2, 0.2, 0.2, 1.0);
         renderPassDescriptor.colorAttachments[0].storeAction = .Store
 
         let commandBuffer = commandQueue.commandBuffer()
@@ -112,6 +156,9 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     }
     
     func setupTexture() {
+        
+        self.textureSizeX = 2 * sizeX
+        self.textureSizeY = 2 * sizeY
         
         var rawData0 = [UInt8](count: Int(textureSizeX) * Int(textureSizeY) * 4, repeatedValue: 0)
         
