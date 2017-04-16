@@ -8,6 +8,7 @@
 
 import UIKit
 import SceneKit
+import Metal
 
 class ViewController: UIViewController, SCNSceneRendererDelegate {
     @IBOutlet var scnView1: SCNView!
@@ -36,12 +37,12 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         scene1 = SCNScene()
         
         let box = SCNBox(width: 1, height: 1, length: 1, chamferRadius: 0)
-        box.materials.first?.diffuse.contents = UIColor.redColor()
+        box.materials.first?.diffuse.contents = UIColor.red
         let boxNode = SCNNode(geometry: box)
         scene1.rootNode.addChildNode(boxNode)
         
         let sphere = SCNSphere(radius: 1)
-        sphere.materials.first?.diffuse.contents = UIColor.yellowColor()
+        sphere.materials.first?.diffuse.contents = UIColor.yellow
         let sphereNode = SCNNode(geometry: sphere)
         sphereNode.position = SCNVector3Make(2, 0, 0)
         scene1.rootNode.addChildNode(sphereNode)
@@ -65,8 +66,8 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         scnView2.allowsCameraControl = true
         //scnView1.showsStatistics = true
         //scnView2.showsStatistics = true
-        scnView1.playing = true
-        scnView2.playing = true
+        scnView1.isPlaying = true
+        scnView2.isPlaying = true
         
         scnView1.delegate = self
         
@@ -76,35 +77,35 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         plane.materials.first?.diffuse.contents = offscreenTexture
     }
 
-    func renderer(renderer: SCNSceneRenderer, willRenderScene scene: SCNScene, atTime time: NSTimeInterval) {
+    func renderer(_ renderer: SCNSceneRenderer, willRenderScene scene: SCNScene, atTime time: TimeInterval) {
         doRender()
     }
     
     func doRender() {
         //rendering to a MTLTexture, so the viewport is the size of this texture
-        let viewport = CGRectMake(0, 0, CGFloat(textureSizeX), CGFloat(textureSizeY))
+        let viewport = CGRect(x: 0, y: 0, width: CGFloat(textureSizeX), height: CGFloat(textureSizeY))
         
         //write to offscreenTexture, clear the texture before rendering using green, store the result
         let renderPassDescriptor = MTLRenderPassDescriptor()
         renderPassDescriptor.colorAttachments[0].texture = offscreenTexture
-        renderPassDescriptor.colorAttachments[0].loadAction = .Clear
+        renderPassDescriptor.colorAttachments[0].loadAction = .clear
         renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0, 1, 0, 1.0); //green
-        renderPassDescriptor.colorAttachments[0].storeAction = .Store
+        renderPassDescriptor.colorAttachments[0].storeAction = .store
 
-        let commandBuffer = commandQueue.commandBuffer()
+        let commandBuffer = commandQueue.makeCommandBuffer()
         
         // reuse scene1 and the current point of view
         renderer.scene = scene1
         renderer.pointOfView = scnView1.pointOfView
-        renderer.renderAtTime(0, viewport: viewport, commandBuffer: commandBuffer, passDescriptor: renderPassDescriptor)
-        
+        renderer.render(atTime: 0, viewport: viewport, commandBuffer: commandBuffer, passDescriptor: renderPassDescriptor)
+
         commandBuffer.commit()
     }
     
     func setupMetal() {
-        if self.scnView1.renderingAPI == SCNRenderingAPI.Metal {
+        if self.scnView1.renderingAPI == SCNRenderingAPI.metal {
             device = scnView1.device
-            commandQueue = device.newCommandQueue()
+            commandQueue = device.makeCommandQueue()
             renderer = SCNRenderer(device: device, options: nil)
         } else {
             fatalError("Sorry, Metal only")
@@ -113,21 +114,21 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     
     func setupTexture() {
         
-        var rawData0 = [UInt8](count: Int(textureSizeX) * Int(textureSizeY) * 4, repeatedValue: 0)
+        var rawData0 = [UInt8](repeating: 0, count: Int(textureSizeX) * Int(textureSizeY) * 4)
         
         let bytesPerRow = 4 * Int(textureSizeX)
-        let bitmapInfo = CGBitmapInfo.ByteOrder32Big.rawValue | CGImageAlphaInfo.PremultipliedLast.rawValue
+        let bitmapInfo = CGBitmapInfo.byteOrder32Big.rawValue | CGImageAlphaInfo.premultipliedLast.rawValue
         
-        let context = CGBitmapContextCreate(&rawData0, Int(textureSizeX), Int(textureSizeY), bitsPerComponent, bytesPerRow, rgbColorSpace, bitmapInfo)
-        CGContextSetFillColorWithColor(context, UIColor.greenColor().CGColor)
-        CGContextFillRect(context, CGRectMake(0, 0, CGFloat(textureSizeX), CGFloat(textureSizeY)))
+        let context = CGContext(data: &rawData0, width: Int(textureSizeX), height: Int(textureSizeY), bitsPerComponent: bitsPerComponent, bytesPerRow: bytesPerRow, space: rgbColorSpace, bitmapInfo: bitmapInfo)!
+        context.setFillColor(UIColor.green.cgColor)
+        context.fill(CGRect(x: 0, y: 0, width: CGFloat(textureSizeX), height: CGFloat(textureSizeY)))
 
-        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptorWithPixelFormat(MTLPixelFormat.RGBA8Unorm, width: Int(textureSizeX), height: Int(textureSizeY), mipmapped: false)
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.rgba8Unorm, width: Int(textureSizeX), height: Int(textureSizeY), mipmapped: false)
         
-        let textureA = device.newTextureWithDescriptor(textureDescriptor)
+        let textureA = device.makeTexture(descriptor: textureDescriptor)
         
         let region = MTLRegionMake2D(0, 0, Int(textureSizeX), Int(textureSizeY))
-        textureA.replaceRegion(region, mipmapLevel: 0, withBytes: &rawData0, bytesPerRow: Int(bytesPerRow))
+        textureA.replace(region: region, mipmapLevel: 0, withBytes: &rawData0, bytesPerRow: Int(bytesPerRow))
 
         offscreenTexture = textureA
     }

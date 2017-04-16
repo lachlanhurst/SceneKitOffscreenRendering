@@ -96,6 +96,8 @@
 				TargetAttributes = {
 					7304BE841BDB0F0800733159 = {
 						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = 4F7DKRYKP6;
+						LastSwiftMigration = 0830;
 					};
 				};
 			};
@@ -249,10 +251,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 4F7DKRYKP6;
 				INFOPLIST_FILE = SceneKitOffscreen/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lachlanhurst.SceneKitOffscreen;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -260,10 +264,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 4F7DKRYKP6;
 				INFOPLIST_FILE = SceneKitOffscreen/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lachlanhurst.SceneKitOffscreen;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -286,6 +292,7 @@
 				7304BE991BDB0F0900733159 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
