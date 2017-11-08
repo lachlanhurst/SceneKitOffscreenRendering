@@ -125,6 +125,8 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
 
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.rgba8Unorm, width: Int(textureSizeX), height: Int(textureSizeY), mipmapped: false)
         
+        textureDescriptor.usage = MTLTextureUsage(rawValue: MTLTextureUsage.renderTarget.rawValue | MTLTextureUsage.shaderRead.rawValue)
+        
         let textureA = device.makeTexture(descriptor: textureDescriptor)
         
         let region = MTLRegionMake2D(0, 0, Int(textureSizeX), Int(textureSizeY))
