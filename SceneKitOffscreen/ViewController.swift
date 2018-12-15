@@ -92,7 +92,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0, 1, 0, 1.0); //green
         renderPassDescriptor.colorAttachments[0].storeAction = .store
 
-        let commandBuffer = commandQueue.makeCommandBuffer()
+        let commandBuffer = commandQueue.makeCommandBuffer()!
         
         // reuse scene1 and the current point of view
         renderer.scene = scene1
@@ -127,7 +127,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         
         textureDescriptor.usage = MTLTextureUsage(rawValue: MTLTextureUsage.renderTarget.rawValue | MTLTextureUsage.shaderRead.rawValue)
         
-        let textureA = device.makeTexture(descriptor: textureDescriptor)
+        let textureA = device.makeTexture(descriptor: textureDescriptor)!
         
         let region = MTLRegionMake2D(0, 0, Int(textureSizeX), Int(textureSizeY))
         textureA.replace(region: region, mipmapLevel: 0, withBytes: &rawData0, bytesPerRow: Int(bytesPerRow))
