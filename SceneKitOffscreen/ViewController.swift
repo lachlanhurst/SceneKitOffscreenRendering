@@ -103,12 +103,12 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     }
     
     func setupMetal() {
-        if self.scnView1.renderingAPI == SCNRenderingAPI.metal {
-            device = scnView1.device
+        if let defaultMtlDevice = MTLCreateSystemDefaultDevice() {
+            device = defaultMtlDevice
             commandQueue = device.makeCommandQueue()
             renderer = SCNRenderer(device: device, options: nil)
         } else {
-            fatalError("Sorry, Metal only")
+            fatalError("iOS simulator does not support Metal, this example can only be run on a real device.")
         }
     }
     
